@@ -137,7 +137,7 @@ graph LR
 
 ### 2.2 Component Lifecycle Management
 
-> ** วงจรชีวิตของ Component เหมือนการทำการบ้าน:**
+**วงจรชีวิตของ Component เหมือนการทำการบ้าน**
 > 1. **Design** = วางแผนว่าจะทำอะไร เหมือนอ่านโจทย์การบ้าน
 > 2. **Development** = เริ่มเขียนโค้ด เหมือนลงมือทำการบ้าน
 > 3. **Testing** = ทดสอบว่าทำงานถูกไหม เหมือนตรวจทานการบ้าน
@@ -320,18 +320,23 @@ idf_component_register(
 ```
 
 **SRCS "src/sensor.c" "src/helper.c"**
+
 ระบุไฟล์ซอร์ส (.c) ที่จะถูกคอมไพล์เป็นส่วนหนึ่งของคอมโพเนนต์นี้ เช่น sensor.c และ helper.c ในโฟลเดอร์ src
 
 **INCLUDE_DIRS "include"**
+
 ระบุโฟลเดอร์ที่มีไฟล์ header (.h) ที่จะถูกเพิ่มเข้าไปใน include path ของคอมโพเนนต์นี้ (เช่น include/)
 
 **REQUIRES "driver" "log" "esp_timer"**
+
 ระบุว่าคอมโพเนนต์นี้ต้องใช้คอมโพเนนต์อื่นๆ (dependencies) เช่น driver, log, esp_timer ซึ่งเป็น library ของ ESP-IDF
 
 **PRIV_REQUIRES "nvs_flash"**
+
 ระบุ dependencies ที่ใช้เฉพาะภายในคอมโพเนนต์นี้ (private) เช่น nvs_flash
 
 **PRIV_INCLUDE_DIRS "src"**
+
 ระบุโฟลเดอร์ header (.h) ที่ใช้เฉพาะภายในคอมโพเนนต์นี้ (private) เช่น src/
 
 - แต่ละบรรทัดใช้กำหนดไฟล์ซอร์ส, ไฟล์ header, และ dependencies ที่จำเป็นสำหรับการ build คอมโพเนนต์ในโปรเจกต์ ESP-IDF ช่วยให้ build system รู้ว่าจะต้องคอมไพล์ไฟล์ไหนและต้องใช้ library อะไรบ้าง
@@ -713,36 +718,76 @@ graph TB
 
 ### 10.1 Common Component Patterns
 
+> **🎓 4 รูปแบบการออกแบบ Component ที่พบบ่อย:**
+
+```mermaid
+graph TD
+    subgraph "1. Singleton Pattern (ผู้จัดการคนเดียว)"
+        A[ผู้จัดการทรัพยากร] --> A1[มีตัวจัดการ<br/>แค่ตัวเดียว]
+        A --> A2[ใช้งานได้<br/>จากทุกที่]
+        A --> A3[สร้างเมื่อ<br/>ต้องใช้]
+    end
+    
+    style A fill:#FFE4B5,stroke-width:3px
+    style A1 fill:#fff,stroke-width:2px
+    style A2 fill:#fff,stroke-width:2px
+    style A3 fill:#fff,stroke-width:2px
+
+```
+
 ```mermaid
 graph TB
-    subgraph "Singleton Pattern"
-        A[Hardware Resource Manager] --> A1[Single instance]
-        A --> A2[Global access point]
-        A --> A3[Lazy initialization]
+    subgraph "2. Factory Pattern"
+        direction TB
+        B["โรงงานผลิตเซนเซอร์"] --> B1["Create Sensors
+        สร้างเซนเซอร์ต่างๆ"]
+        B --> B2["Hide Creation
+        ซ่อนวิธีการสร้าง"]
+        B --> B3["Extensible
+        เพิ่มแบบใหม่ได้ง่าย"]
+        
+        style B fill:#E0E0FF,stroke-width:3px
+        style B1 fill:#fff,stroke-width:2px
+        style B2 fill:#fff,stroke-width:2px
+        style B3 fill:#fff,stroke-width:2px
     end
-    
-    subgraph "Factory Pattern"
-        B[Sensor Factory] --> B1[Create different sensors]
-        B --> B2[Hide creation logic]
-        B --> B3[Extensible design]
+```
+
+```mermaid
+graph TB
+    subgraph "3. Observer Pattern"
+        direction TB
+        C["ระบบแจ้งเตือน LINE"] --> C1["Notify
+        ส่งข้อความถึงสมาชิก"]
+        C --> C2["Loose Coupling
+        ไม่ผูกติดกัน"]
+        C --> C3["Subscribe/Unsubscribe
+        เข้า/ออกกลุ่มได้"]
+        
+        style C fill:#98FB98,stroke-width:3px
+        style C1 fill:#fff,stroke-width:2px
+        style C2 fill:#fff,stroke-width:2px
+        style C3 fill:#fff,stroke-width:2px
     end
-    
-    subgraph "Observer Pattern"
-        C[Event Publisher] --> C1[Notify subscribers]
-        C --> C2[Loose coupling]
-        C --> C3[Dynamic subscription]
+```
+
+```mermaid
+graph TB
+    subgraph "4. Strategy Pattern"
+        direction TB
+        D["ระบบส่งของ
+        Kerry/Flash/ไปรษณีย์"] --> D1["Different Methods
+        มีหลายวิธีส่ง"]
+        D --> D2["Runtime Selection
+        เลือกตอนจะส่งได้"]
+        D --> D3["Pluggable
+        เพิ่มวิธีใหม่ได้ง่าย"]
+        
+        style D fill:#DDA0DD,stroke-width:3px
+        style D1 fill:#fff,stroke-width:2px
+        style D2 fill:#fff,stroke-width:2px
+        style D3 fill:#fff,stroke-width:2px
     end
-    
-    subgraph "Strategy Pattern"
-        D[Communication Manager] --> D1[Different protocols]
-        D --> D2[Runtime selection]
-        D --> D3[Pluggable algorithms]
-    end
-    
-    style A fill:#FFE4B5
-    style B fill:#E0E0FF
-    style C fill:#98FB98
-    style D fill:#DDA0DD
 ```
 
 ### 10.2 Component Communication Patterns
