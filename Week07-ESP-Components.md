@@ -719,75 +719,70 @@ graph TB
 ### 10.1 Common Component Patterns
 
 > **🎓 4 รูปแบบการออกแบบ Component ที่พบบ่อย:**
+> 
+> **1. Singleton Pattern - เหมือนผู้จัดการคนเดียว**
+> - มีตัวจัดการแค่ตัวเดียว (เหมือนร้านที่มีผู้จัดการคนเดียว)
+> - เข้าถึงได้จากทุกที่ในระบบ (ทุกแผนกติดต่อผู้จัดการคนนี้ได้)
+> - สร้างเมื่อจำเป็นต้องใช้ (ถ้าไม่มีใครเรียกหา ก็ไม่ต้องมี)
 
 ```mermaid
-graph TD
-    subgraph "1. Singleton Pattern (ผู้จัดการคนเดียว)"
-        A[ผู้จัดการทรัพยากร] --> A1[มีตัวจัดการ<br/>แค่ตัวเดียว]
-        A --> A2[ใช้งานได้<br/>จากทุกที่]
-        A --> A3[สร้างเมื่อ<br/>ต้องใช้]
+flowchart TD
+    subgraph Singleton[Singleton Pattern]
+        PM[ผู้จัดการ] --> |มีได้<br>1 คน| W1[พนักงาน 1]
+        PM --> |ติดต่อ| W2[พนักงาน 2]
+        PM --> |สั่งงาน| W3[พนักงาน 3]
     end
-    
-    style A fill:#FFE4B5,stroke-width:3px
-    style A1 fill:#fff,stroke-width:2px
-    style A2 fill:#fff,stroke-width:2px
-    style A3 fill:#fff,stroke-width:2px
-
+    style PM fill:#FFE4B5,stroke-width:3px
+    style W1 fill:#fff,stroke-width:2px
+    style W2 fill:#fff,stroke-width:2px
+    style W3 fill:#fff,stroke-width:2px
 ```
 
 ```mermaid
-graph TB
-    subgraph "2. Factory Pattern"
-        direction TB
-        B["โรงงานผลิตเซนเซอร์"] --> B1["Create Sensors
-        สร้างเซนเซอร์ต่างๆ"]
-        B --> B2["Hide Creation
-        ซ่อนวิธีการสร้าง"]
-        B --> B3["Extensible
-        เพิ่มแบบใหม่ได้ง่าย"]
-        
-        style B fill:#E0E0FF,stroke-width:3px
-        style B1 fill:#fff,stroke-width:2px
-        style B2 fill:#fff,stroke-width:2px
-        style B3 fill:#fff,stroke-width:2px
+flowchart TD
+    subgraph Factory[Factory Pattern]
+        F[โรงงานผลิตเซนเซอร์] --> S1[เซนเซอร์วัดอุณหภูมิ]
+        F --> S2[เซนเซอร์วัดความชื้น]
+        F --> S3[เซนเซอร์วัดแสง]
+        F --> S4[เพิ่มชนิดใหม่ได้...]
     end
+    style F fill:#E0E0FF,stroke-width:3px
+    style S1 fill:#fff,stroke-width:2px
+    style S2 fill:#fff,stroke-width:2px
+    style S3 fill:#fff,stroke-width:2px
+    style S4 fill:#fff,stroke-width:2px
 ```
 
 ```mermaid
-graph TB
-    subgraph "3. Observer Pattern"
-        direction TB
-        C["ระบบแจ้งเตือน LINE"] --> C1["Notify
-        ส่งข้อความถึงสมาชิก"]
-        C --> C2["Loose Coupling
-        ไม่ผูกติดกัน"]
-        C --> C3["Subscribe/Unsubscribe
-        เข้า/ออกกลุ่มได้"]
-        
-        style C fill:#98FB98,stroke-width:3px
-        style C1 fill:#fff,stroke-width:2px
-        style C2 fill:#fff,stroke-width:2px
-        style C3 fill:#fff,stroke-width:2px
+flowchart TD
+    subgraph Observer[Observer Pattern - เหมือนกลุ่ม LINE]
+        L[กลุ่ม LINE] --> |ส่งข่าว| M1[สมาชิก 1]
+        L --> |แจ้งเตือน| M2[สมาชิก 2]
+        L --> |อัพเดท| M3[สมาชิก 3]
+        M4[สมาชิกใหม่] -.-> |เข้ากลุ่ม| L
+        M5[ออกกลุ่ม] -.-> |ออก| L
     end
+    style L  fill:#98FB98,stroke-width:3px
+    style M1 fill:#fff,stroke-width:2px
+    style M2 fill:#fff,stroke-width:2px
+    style M3 fill:#fff,stroke-width:2px
+    style M4 fill:#fff,stroke-width:2px
+    style M5 fill:#fff,stroke-width:2px
 ```
 
 ```mermaid
-graph TB
-    subgraph "4. Strategy Pattern"
-        direction TB
-        D["ระบบส่งของ
-        Kerry/Flash/ไปรษณีย์"] --> D1["Different Methods
-        มีหลายวิธีส่ง"]
-        D --> D2["Runtime Selection
-        เลือกตอนจะส่งได้"]
-        D --> D3["Pluggable
-        เพิ่มวิธีใหม่ได้ง่าย"]
-        
-        style D fill:#DDA0DD,stroke-width:3px
-        style D1 fill:#fff,stroke-width:2px
-        style D2 fill:#fff,stroke-width:2px
-        style D3 fill:#fff,stroke-width:2px
+flowchart TD
+    subgraph Strategy[Strategy Pattern - เหมือนเลือกวิธีส่งของ]
+        D[ระบบส่งของ] --> |ด่วนพิเศษ| D1[Kerry]
+        D --> |ราคาประหยัด| D2[ไปรษณีย์]
+        D --> |ส่งในกรุงเทพ| D3[Grab]
+        D -.-> |เพิ่มตัวเลือก| D4[วิธีใหม่ๆ]
     end
+    style D fill:#DDA0DD,stroke-width:3px
+    style D1 fill:#fff,stroke-width:2px
+    style D2 fill:#fff,stroke-width:2px
+    style D3 fill:#fff,stroke-width:2px
+    style D4 fill:#fff,stroke-width:2px
 ```
 
 ### 10.2 Component Communication Patterns
