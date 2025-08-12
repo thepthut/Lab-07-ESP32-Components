@@ -271,7 +271,7 @@ graph TD
     style D fill:#87CEEB
 ```
 
-### 4.2 Component Interface Design
+### 4.2 Component Interface Design (APIs)
 
 ```mermaid
 classDiagram
@@ -318,6 +318,30 @@ idf_component_register(
     PRIV_INCLUDE_DIRS "src"
 )
 ```
+
+**SRCS "src/sensor.c" "src/helper.c"**
+ระบุไฟล์ซอร์ส (.c) ที่จะถูกคอมไพล์เป็นส่วนหนึ่งของคอมโพเนนต์นี้ เช่น sensor.c และ helper.c ในโฟลเดอร์ src
+
+**INCLUDE_DIRS "include"**
+ระบุโฟลเดอร์ที่มีไฟล์ header (.h) ที่จะถูกเพิ่มเข้าไปใน include path ของคอมโพเนนต์นี้ (เช่น include/)
+
+**REQUIRES "driver" "log" "esp_timer"**
+ระบุว่าคอมโพเนนต์นี้ต้องใช้คอมโพเนนต์อื่นๆ (dependencies) เช่น driver, log, esp_timer ซึ่งเป็น library ของ ESP-IDF
+
+**PRIV_REQUIRES "nvs_flash"**
+ระบุ dependencies ที่ใช้เฉพาะภายในคอมโพเนนต์นี้ (private) เช่น nvs_flash
+
+**PRIV_INCLUDE_DIRS "src"**
+ระบุโฟลเดอร์ header (.h) ที่ใช้เฉพาะภายในคอมโพเนนต์นี้ (private) เช่น src/
+
+- แต่ละบรรทัดใช้กำหนดไฟล์ซอร์ส, ไฟล์ header, และ dependencies ที่จำเป็นสำหรับการ build คอมโพเนนต์ในโปรเจกต์ ESP-IDF ช่วยให้ build system รู้ว่าจะต้องคอมไพล์ไฟล์ไหนและต้องใช้ library อะไรบ้าง
+
+
+- ไฟล์ header ใน INCLUDE_DIRS จะถูกมองเห็นจากคอมโพเนนต์อื่นด้วย
+
+- ไฟล์ header ใน PRIV_INCLUDE_DIRS จะถูกมองเห็นเฉพาะในคอมโพเนนต์นี้เท่านั้น
+
+
 
 ### 5.2 Build Dependency Graph
 
