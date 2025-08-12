@@ -902,51 +902,17 @@ lab7-3_esp32_Component/
 4. **Modularity** - component สามารถนำไปใช้ใน project อื่นได้
 5. **ESP-IDF Standard** - เป็นมาตรฐานของ ESP-IDF project
 
-## การเตรียมพร้อมสำหรับใบงานต่อไป (GitHub Team Work)
-```bash
-# สำหรับการทำงานเป็นทีม ควรสร้าง branch แยกสำหรับแต่ละ component
-git checkout -b feature/sensor-component
-# ทำงานใน components/sensor/
 
-git checkout -b feature/display-component  
-# ทำงานใน components/display/
-
-# จากนั้น merge กลับเข้า main branch
-```
 
 ## การใช้งาน
 1. สร้าง components ด้วยคำสั่ง `idf.py create-component`
 2. แก้ไขไฟล์ CMakeLists.txt, .h และ .c ของแต่ละ component
 3. เขียน main application ที่เรียกใช้ทั้ง 2 components
 4. Build และทดสอบด้วย QEMU
-```
-#include "sensor.h"
 
-static const char *TAG = "LAB7-3";
-
-void app_main(void)
-{
-    ESP_LOGI(TAG, "🚀 Lab 7-3: Custom ESP32 Component Demo Started");
-    
-    // เริ่มต้น enhanced sensor component
-    sensor_init();
-    
-    int reading_count = 0;
-    
-    while(1) {
-        reading_count++;
-        ESP_LOGI(TAG, "📋 Reading #%d", reading_count);
-        
-        // อ่านข้อมูลจาก enhanced sensor
-        sensor_read_all_data();
-        
-        ESP_LOGI(TAG, "==========================================");
-        vTaskDelay(pdMS_TO_TICKS(5000));
-    }
-}
-```
 
 #### การ Build และ Flash Lab 7-3
+
 ```bash
 # เข้าไปใน project directory
 cd lab7-3_esp32_Component
@@ -957,154 +923,11 @@ idf.py set-target esp32
 # Build project
 idf.py build
 
-# Flash to ESP32 (หากมี ESP32 ต่ออยู่)
-# idf.py -p /dev/ttyUSB0 flash monitor
+# ทดสอบการทำงาน
+idf.py qemu
 ```
 
 #### สร้างไฟล์ `lab7-3_esp32_Component/README.md`
-```markdown
-# Lab 7-3: Custom ESP32 Component Demo
-
-## คำอธิบาย
-การทดลองนี้แสดงการสร้าง component ใหม่ภายใน project
-มีฟีเจอร์ advanced sensor อ่านค่า temperature, humidity และคำนวณ heat index
-
-## ผลลัพธ์ที่คาดหวัง
-- แสดงข้อมูล temperature และ humidity
-- คำนวณและแสดง heat index
-- แสดงสถานะความปลอดภัย
-- LED บน GPIO 2 กะพริบเมื่ออ่านข้อมูล
-
-## อุปกรณ์เพิ่มเติม
-- LED ต่อกับ GPIO 2 (Built-in LED ของ ESP32)
-```
-
----
-
-## ผลการทดลองที่คาดหวัง
-
-### Lab 7-1: Local Component
-```
-I (294) LAB7-1: 🚀 Lab 7-1: Local Component Demo Started
-I (304) SENSOR: 🔧 Sensor initialized from file: /project/components/Sensors/sensor.c, line: 12
-I (314) SENSOR: 📡 Sensor module ready for operation
-I (324) SENSOR: 📊 Reading sensor data from file: /project/components/Sensors/sensor.c, line: 18
-I (334) SENSOR: 🌡️  Temperature: 32.4°C
-I (334) SENSOR: 💧 Humidity: 67.8%
-I (344) SENSOR: ✅ Sensor status check from file: /project/components/Sensors/sensor.c, line: 27
-I (354) SENSOR: 📈 All sensors operating normally
-```
-
-### Lab 7-2: Managed Component from GitHub URL
-```
-I (294) LAB7-2: 🚀 Lab 7-2: Managed Component from GitHub URL Demo Started
-I (304) LAB7-2: 📥 Using Sensors component from: https://github.com/APPLICATIONS-OF-MICROCONTROLLERS/Lab7_Components
-I (314) SENSOR: 🔧 Sensor initialized from file: /managed_components/lab7_components/components/Sensors/sensor.c, line: 11
-I (324) SENSOR: 📡 Sensor module ready for operation
-I (334) LAB7-2: 📋 Reading #1 from GitHub Component
-I (344) SENSOR: 📊 Reading sensor data from file: /managed_components/lab7_components/components/Sensors/sensor.c, line: 17
-I (354) SENSOR: 🌡️  Temperature: 28.7°C
-I (364) SENSOR: 💧 Humidity: 72.3%
-I (374) SENSOR: ✅ Sensor status check from file: /managed_components/lab7_components/components/Sensors/sensor.c, line: 26
-I (384) SENSOR: 📈 All sensors operating normally
-I (394) LAB7-2: � Component Source: GitHub Repository
-I (404) LAB7-2: ==========================================
-```
-
-### Lab 7-3: Custom ESP32 Components (Sensor + Display)
-```
-I (294) LAB7-3: 🚀 Lab 7-3: Custom Components Demo (sensor + display) Started
-I (304) LAB7-3: 📦 Using components created with idf.py create-component
-I (314) ENHANCED_SENSOR: 🔧 Enhanced Sensor Component initialized
-I (324) ENHANCED_SENSOR: 📍 File: /project/components/sensor/sensor.c, Line: 12
-I (334) ENHANCED_SENSOR: ✅ GPIO LED configured on pin 2
-I (344) DISPLAY: 🖥️  Display Component initialized
-I (354) DISPLAY: 📍 File: /project/components/display/display.c, Line: 8
-I (364) DISPLAY: ✅ Virtual display ready for operation
-I (374) LAB7-3: 📋 Reading #1
-I (384) DISPLAY: 🧹 Display cleared
-I (394) ENHANCED_SENSOR: 🌡️  Temperature: 28.45°C
-I (404) ENHANCED_SENSOR: 💧 Humidity: 72.30%
-I (414) LAB7-3: 🔥 Heat Index: 64.60
-I (424) DISPLAY: ┌─────────────────────────────────┐
-I (434) DISPLAY: │        SENSOR DATA DISPLAY      │
-I (444) DISPLAY: ├─────────────────────────────────┤
-I (454) DISPLAY: │ 🌡️  Temperature:  28.45°C      │
-I (464) DISPLAY: │ � Humidity:     72.30%       │
-I (474) DISPLAY: │ �🔥 Heat Index:   64.60        │
-I (484) DISPLAY: └─────────────────────────────────┘
-I (494) DISPLAY: ┌─────────────────────────────────┐
-I (504) DISPLAY: │         SYSTEM STATUS           │
-I (514) DISPLAY: ├─────────────────────────────────┤
-I (524) DISPLAY: │ Status: ✅ Comfortable        │
-I (534) DISPLAY: └─────────────────────────────────┘
-I (544) LAB7-3: ==========================================
-```
-
----
-
-## ขั้นตอนการดำเนินการทดลอง
-
-### 1. การเตรียมความพร้อม
-```bash
-# สร้างโครงสร้างโฟลเดอร์
-mkdir -p Lab7-ESP32-Components
-cd Lab7-ESP32-Components
-
-# สร้าง docker-compose.yml
-# สร้างโฟลเดอร์ components และโฟลเดอร์ lab ต่างๆ
-```
-
-### 2. การรัน Docker Container
-```bash
-# เริ่มต้น container
-docker-compose up -d
-
-# เข้าใช้งาน container
-docker exec -it esp32-lab7 bash
-```
-
-### 3. การทดสอบแต่ละ Lab พร้อมสร้าง .gitignore
-```bash
-# ทดสอบ Lab 7-1
-cd lab7-1_Managed_Local_Component
-# สร้าง .gitignore (ตามขั้นตอนใน Lab 7-1)
-idf.py set-target esp32
-idf.py build
-
-# ทดสอบ Lab 7-2  
-cd ../lab7-2_Managed_url_Component
-# สร้าง .gitignore (ตามขั้นตอนใน Lab 7-2)
-idf.py set-target esp32
-idf.py build
-
-# ทดสอบ Lab 7-3
-cd ../lab7-3_esp32_Component
-idf.py set-target esp32
-idf.py build
-```
-
----
-
-## คำถามท้ายการทดลอง
-
-1. **อธิบายความแตกต่างระหว่าง Local Component และ Managed Component**
-   - Local Component: component ที่เก็บอยู่ในโฟลเดอร์ project ในเครื่อง
-   - Managed Component: component ที่ดาวน์โหลดจาก ESP Component Registry
-
-2. **ข้อดีและข้อเสียของการใช้ Managed Component จาก URL คืออะไร?**
-   - ข้อดี: อัพเดทอัตโนมัติ, ได้รับการดูแลจากผู้พัฒนา, มี documentation ครบถ้วน
-   - ข้อเสีย: ต้องใช้ internet ในการดาวน์โหลด, อาจมีปัญหา dependency
-
-3. **เมื่อไหร่ควรสร้าง Component ใหม่แทนการใช้ Component ที่มีอยู่?**
-   - เมื่อต้องการฟังก์ชันเฉพาะที่ไม่มีใน component ที่มีอยู่
-   - เมื่อต้องการปรับแต่งให้เหมาะกับงานเฉพาะ
-   - เมื่อต้องการประสิทธิภาพสูงหรือการใช้หน่วยความจำที่เหมาะสม
-
-4. **อธิบายโครงสร้างไฟล์ที่จำเป็นสำหรับการสร้าง ESP32 Component**
-   - `CMakeLists.txt`: กำหนดการ compile และ dependency
-   - `.h` files: header files สำหรับ function declarations
-   - `.c` files: source code ที่ implement ฟังก์ชันต่างๆ
 
 ---
 
@@ -1144,35 +967,4 @@ idf.py update-dependencies
 
 ---
 
-## ข้อเสนอแนะเพิ่มเติม
-
-1. **Best Practices**
-   - ตั้งชื่อ component ให้สื่อความหมาย
-   - เขียน documentation ให้ครบถ้วน
-   - ใช้ version control สำหรับ component ที่พัฒนาเอง
-   - **สร้าง .gitignore ทุกครั้งที่เริ่ม project ใหม่**
-
-2. **การจัดการไฟล์ด้วย .gitignore**
-   - `build/` - ไฟล์ที่ compile แล้ว (ไม่ควร commit)
-   - `sdkconfig*` - ไฟล์ configuration (อาจแตกต่างแต่ละเครื่อง)
-   - `managed_components/` - components ที่ดาวน์โหลดอัตโนมัติ
-   - `.vscode/`, `.idea/` - ไฟล์ settings ของ IDE
-
-3. **การแก้ไขปัญหา**
-   - ตรวจสอบ dependency ใน CMakeLists.txt
-   - ตรวจสอบ path ของ include files
-   - ใช้ `idf.py clean` เมื่อมีปัญหาการ build
-   - **ลบโฟลเดอร์ build/ และ build ใหม่หากมีปัญหา**
-
-4. **การพัฒนาต่อยอด**
-   - ศึกษา ESP Component Registry เพิ่มเติม
-   - เรียนรู้การสร้าง component แบบ professional
-   - ฝึกการใช้ Git สำหรับจัดการ component
-   - **เรียนรู้ Git workflow สำหรับ embedded development**
-
-5. **GitHub Team Collaboration (เตรียมพร้อมสำหรับใบงานต่อไป)**
-   - **Feature Branch Workflow** - สร้าง branch แยกสำหรับแต่ละ component
-   - **Pull Request Process** - review code ก่อน merge
-   - **Component Ownership** - แต่ละคนรับผิดชอบ component ของตนเอง
-   - **Issue Tracking** - ใช้ GitHub Issues สำหรับติดตามงาน
-   - **Documentation** - เขียน README.md สำหรับแต่ละ component
+## ใบงานต่อไป (GitHub Team Work)
