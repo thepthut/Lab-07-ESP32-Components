@@ -239,6 +239,36 @@ idf.py build
 
 ```
 
+#### สร้างไฟล์ `.gitignore` สำหรับ Lab 7-1
+```bash
+# สร้างไฟล์ .gitignore ใน lab7-1_Managed_Local_Component
+cat > .gitignore << 'EOF'
+# ESP-IDF Build files
+build/
+sdkconfig
+sdkconfig.old
+sdkconfig.h
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Dependencies
+managed_components/
+dependencies.lock
+
+# Logs
+*.log
+EOF
+```
+
 ### ขั้นตอนที่ 4: ระบุเส้นทางไปยังโฟลเดอร์ของ Components
 
 ในการ build จะพบ error เนื่องจากระบบ build ยังไม่รู้จัก components ให้แก้ไขดังต่อไปนี้
@@ -371,6 +401,36 @@ idf.py build
 idf.py qemu monitor
 ```
 
+#### สร้างไฟล์ `.gitignore` สำหรับ Lab 7-2
+```bash
+# สร้างไฟล์ .gitignore ใน lab7-2_Managed_url_Component
+cat > .gitignore << 'EOF'
+# ESP-IDF Build files
+build/
+sdkconfig
+sdkconfig.old
+sdkconfig.h
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Managed Components (downloaded from GitHub)
+managed_components/
+dependencies.lock
+
+# Logs
+*.log
+EOF
+```
+
 #### 1.7 สร้างไฟล์ `lab7-2_Managed_url_Component/README.md`
 ```markdown
 # Lab 7-2: Managed Component from GitHub URL Demo
@@ -393,6 +453,7 @@ idf.py qemu monitor
 1. เข้าไปในโฟลเดอร์ lab7-2_Managed_url_Component
 2. รันคำสั่ง `idf.py build` (จะดาวน์โหลด component จาก GitHub อัตโนมัติ)
 3. ทดสอบด้วย QEMU
+```
 
 ---
 
@@ -414,9 +475,9 @@ idf.py qemu monitor
 
 
 
-## Lab 7.3 การสร้าง ESP32 Component ใหม่
+## Lab 7.3 การสร้าง ESP32 Component ใหม่ด้วยคำสั่ง idf.py create-component
 
-### ขั้นตอนที่ 1: สร้าง Component ภายใน Project
+### ขั้นตอนที่ 1: สร้าง Project และ Components
 
 #### สร้างไฟล์ `lab7-3_esp32_Component/CMakeLists.txt`
 ```cmake
@@ -426,14 +487,62 @@ include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(lab7-3)
 ```
 
-#### สร้างไฟล์ `lab7-3_esp32_Component/sensor/CMakeLists.txt`
+#### ใช้คำสั่ง idf.py create-component เพื่อสร้าง Components
+```bash
+# เข้าไปใน project directory
+cd lab7-3_esp32_Component
+
+#export environment เพื่อให้สามารถเรียกใช้ idf tools ได้
+. $IDF_PATH/export.sh
+
+# สร้างโฟลเดอร์ components ก่อน 
+mkdir -p components
+
+# สร้าง sensor component ในโฟลเดอร์ components
+cd components
+idf.py create-component sensor
+
+# สร้าง display component ในโฟลเดอร์ components  
+idf.py create-component display
+cd ..
+```
+
+> **หมายเหตุ:** การสร้าง component ในโฟลเดอร์ `components/` จะช่วยให้:
+> - การจัดระเบียบ project ดีขึ้น
+> - ง่ายต่อการทำงานเป็นทีมผ่าน GitHub
+> - เป็นมาตรฐานของ ESP-IDF project
+> - แต่ละคนสามารถรับผิดชอบ component ต่างกันได้
+
+#### โครงสร้างโฟลเดอร์ที่เกิดขึ้นหลังจากรันคำสั่ง:
+```
+lab7-3_esp32_Component/
+├── CMakeLists.txt
+├── components/                   # สร้างด้วยตนเอง
+│   ├── sensor/                   # สร้างจาก idf.py create-component sensor
+│   │   ├── CMakeLists.txt        # สร้างอัตโนมัติ
+│   │   ├── include/
+│   │   │   └── sensor.h          # สร้างอัตโนมัติ (ต้องแก้ไข)
+│   │   └── sensor.c              # สร้างอัตโนมัติ (ต้องแก้ไข)
+│   └── display/                  # สร้างจาก idf.py create-component display
+│       ├── CMakeLists.txt        # สร้างอัตโนมัติ
+│       ├── include/
+│       │   └── display.h         # สร้างอัตโนมัติ (ต้องแก้ไข)
+│       └── display.c             # สร้างอัตโนมัติ (ต้องแก้ไข)
+└── main/
+    ├── CMakeLists.txt
+    └── lab7-3.c
+```
+
+### ขั้นตอนที่ 2: แก้ไขไฟล์ Sensor Component
+
+#### แก้ไขไฟล์ `lab7-3_esp32_Component/components/sensor/CMakeLists.txt`
 ```cmake
 idf_component_register(SRCS "sensor.c"
-                       INCLUDE_DIRS "."
+                       INCLUDE_DIRS "include"
                        REQUIRES "log" "driver")
 ```
 
-#### สร้างไฟล์ `lab7-3_esp32_Component/sensor/sensor.h`
+#### แก้ไขไฟล์ `lab7-3_esp32_Component/components/sensor/include/sensor.h`
 ```c
 #ifndef SENSOR_H
 #define SENSOR_H
@@ -469,7 +578,7 @@ void sensor_read_all_data(void);
 #endif // SENSOR_H
 ```
 
-#### สร้างไฟล์ `lab7-3_esp32_Component/sensor/sensor.c`
+#### แก้ไขไฟล์ `lab7-3_esp32_Component/components/sensor/sensor.c`
 ```c
 #include <stdio.h>
 #include <stdlib.h>
@@ -541,6 +650,96 @@ void sensor_read_all_data(void)
 }
 ```
 
+### ขั้นตอนที่ 3: แก้ไขไฟล์ Display Component
+
+#### แก้ไขไฟล์ `lab7-3_esp32_Component/components/display/CMakeLists.txt`
+```cmake
+idf_component_register(SRCS "display.c"
+                       INCLUDE_DIRS "include"
+                       REQUIRES "log")
+```
+
+#### แก้ไขไฟล์ `lab7-3_esp32_Component/components/display/include/display.h`
+```c
+#ifndef DISPLAY_H
+#define DISPLAY_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @brief Initialize display module
+ */
+void display_init(void);
+
+/**
+ * @brief Show sensor data on display
+ */
+void display_show_sensor_data(float temperature, float humidity, float heat_index);
+
+/**
+ * @brief Show system status
+ */
+void display_show_status(const char* status);
+
+/**
+ * @brief Clear display
+ */
+void display_clear(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // DISPLAY_H
+```
+
+#### แก้ไขไฟล์ `lab7-3_esp32_Component/components/display/display.c`
+```c
+#include <stdio.h>
+#include <string.h>
+#include "esp_log.h"
+#include "display.h"
+
+static const char *TAG = "DISPLAY";
+
+void display_init(void)
+{
+    ESP_LOGI(TAG, "🖥️  Display Component initialized");
+    ESP_LOGI(TAG, "📍 File: %s, Line: %d", __FILE__, __LINE__);
+    ESP_LOGI(TAG, "✅ Virtual display ready for operation");
+}
+
+void display_show_sensor_data(float temperature, float humidity, float heat_index)
+{
+    ESP_LOGI(TAG, "┌─────────────────────────────────┐");
+    ESP_LOGI(TAG, "│        SENSOR DATA DISPLAY      │");
+    ESP_LOGI(TAG, "├─────────────────────────────────┤");
+    ESP_LOGI(TAG, "│ 🌡️  Temperature: %6.2f°C      │", temperature);
+    ESP_LOGI(TAG, "│ 💧 Humidity:    %6.2f%%       │", humidity);
+    ESP_LOGI(TAG, "│ 🔥 Heat Index:  %6.2f        │", heat_index);
+    ESP_LOGI(TAG, "└─────────────────────────────────┘");
+}
+
+void display_show_status(const char* status)
+{
+    ESP_LOGI(TAG, "┌─────────────────────────────────┐");
+    ESP_LOGI(TAG, "│         SYSTEM STATUS           │");
+    ESP_LOGI(TAG, "├─────────────────────────────────┤");
+    ESP_LOGI(TAG, "│ Status: %-23s │", status);
+    ESP_LOGI(TAG, "└─────────────────────────────────┘");
+}
+
+void display_clear(void)
+{
+    ESP_LOGI(TAG, "🧹 Display cleared");
+    ESP_LOGI(TAG, "");
+}
+```
+
+### ขั้นตอนที่ 4: สร้างไฟล์ Main Application
+
 #### สร้างไฟล์ `lab7-3_esp32_Component/main/CMakeLists.txt`
 ```cmake
 idf_component_register(SRCS "lab7-3.c"
@@ -553,6 +752,174 @@ idf_component_register(SRCS "lab7-3.c"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
+#include "sensor.h"
+#include "display.h"
+
+static const char *TAG = "LAB7-3";
+
+void app_main(void)
+{
+    ESP_LOGI(TAG, "� Lab 7-3: Custom Components Demo (sensor + display) Started");
+    ESP_LOGI(TAG, "📦 Using components created with idf.py create-component");
+    
+    // เริ่มต้น components
+    sensor_init();
+    display_init();
+    
+    int reading_count = 0;
+    
+    while(1) {
+        reading_count++;
+        ESP_LOGI(TAG, "📋 Reading #%d", reading_count);
+        
+        display_clear();
+        
+        // อ่านข้อมูลจาก sensor component
+        float temp = sensor_read_temperature();
+        float hum = sensor_read_humidity();
+        
+        // คำนวณ Heat Index
+        float heat_index = temp + 0.5 * hum;
+        ESP_LOGI(TAG, "🔥 Heat Index: %.2f", heat_index);
+        
+        // แสดงข้อมูลผ่าน display component
+        display_show_sensor_data(temp, hum, heat_index);
+        
+        // แสดงสถานะตามค่า Heat Index
+        if (heat_index < 80) {
+            display_show_status("✅ Comfortable");
+        } else if (heat_index < 90) {
+            display_show_status("⚠️  Caution");
+        } else {
+            display_show_status("🚨 Warning");
+        }
+        
+        ESP_LOGI(TAG, "==========================================");
+        vTaskDelay(pdMS_TO_TICKS(6000));
+    }
+}
+```
+
+### ขั้นตอนที่ 5: การ Build และทดสอบ Lab 7-3
+
+#### การ Build และ Flash Lab 7-3
+```bash
+# เข้าไปใน project directory
+cd lab7-3_esp32_Component
+
+#export environment เพื่อให้สามารถเรียกใช้ idf tools ได้
+. $IDF_PATH/export.sh
+
+# กำหนด target ESP32
+idf.py set-target esp32
+
+# Build project
+idf.py build
+
+# รัน QEMU (สำหรับการทดสอบ)
+idf.py qemu monitor
+```
+
+#### สร้างไฟล์ `.gitignore` สำหรับ Lab 7-3
+```bash
+# สร้างไฟล์ .gitignore ใน lab7-3_esp32_Component
+# ESP-IDF Build files
+build/
+sdkconfig
+sdkconfig.old
+sdkconfig.h
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Component dependencies
+managed_components/
+dependencies.lock
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+```
+
+#### สร้างไฟล์ `lab7-3_esp32_Component/README.md`
+```markdown
+# Lab 7-3: Custom ESP32 Components (Sensor + Display)
+
+## คำอธิบาย
+การทดลองนี้แสดงการสร้าง component ใหม่ด้วยคำสั่ง `idf.py create-component`
+สร้าง 2 components:
+1. **Sensor Component** - อ่านค่า temperature, humidity และคำนวณ heat index
+2. **Display Component** - แสดงผลข้อมูลในรูปแบบตาราง
+
+## โครงสร้างโฟลเดอร์หลังใช้ create-component
+lab7-3_esp32_Component/
+├── CMakeLists.txt
+├── components/
+│   ├── sensor/
+│   │   ├── CMakeLists.txt
+│   │   ├── include/
+│   │   │   └── sensor.h
+│   │   └── sensor.c
+│   └── display/
+│       ├── CMakeLists.txt
+│       ├── include/
+│       │   └── display.h
+│       └── display.c
+├── main/
+│   ├── CMakeLists.txt
+│   └── lab7-3.c
+├── build/
+└── README.md
+```
+
+## ผลลัพธ์ที่คาดหวัง
+- แสดงข้อความการเริ่มต้น sensor และ display components
+- แสดงข้อมูล temperature และ humidity
+- คำนวณและแสดง heat index
+- แสดงข้อมูลในรูปแบบตารางผ่าน display component
+- แสดงสถานะความปลอดภัยตามค่า heat index
+
+## ความแตกต่างจาก Lab อื่นๆ
+- **Lab 7-1**: ใช้ local component (โฟลเดอร์ components ของ project)
+- **Lab 7-2**: ใช้ managed component จาก GitHub URL
+- **Lab 7-3**: สร้าง component ใหม่ด้วย `idf.py create-component` (2 components ในโฟลเดอร์ components/)
+
+## ข้อดีของการใช้โฟลเดอร์ components/
+1. **การจัดระเบียบ** - แยก components ออกจาก main application
+2. **การทำงานเป็นทีม** - แต่ละคนสามารถรับผิดชอบ component ต่างกันได้
+3. **GitHub Collaboration** - ง่ายต่อการ review code และ merge
+4. **Modularity** - component สามารถนำไปใช้ใน project อื่นได้
+5. **ESP-IDF Standard** - เป็นมาตรฐานของ ESP-IDF project
+
+## การเตรียมพร้อมสำหรับใบงานต่อไป (GitHub Team Work)
+```bash
+# สำหรับการทำงานเป็นทีม ควรสร้าง branch แยกสำหรับแต่ละ component
+git checkout -b feature/sensor-component
+# ทำงานใน components/sensor/
+
+git checkout -b feature/display-component  
+# ทำงานใน components/display/
+
+# จากนั้น merge กลับเข้า main branch
+```
+
+## การใช้งาน
+1. สร้าง components ด้วยคำสั่ง `idf.py create-component`
+2. แก้ไขไฟล์ CMakeLists.txt, .h และ .c ของแต่ละ component
+3. เขียน main application ที่เรียกใช้ทั้ง 2 components
+4. Build และทดสอบด้วย QEMU
+```
 #include "sensor.h"
 
 static const char *TAG = "LAB7-3";
@@ -644,18 +1011,34 @@ I (394) LAB7-2: � Component Source: GitHub Repository
 I (404) LAB7-2: ==========================================
 ```
 
-### Lab 7-3: Custom ESP32 Component
+### Lab 7-3: Custom ESP32 Components (Sensor + Display)
 ```
-I (294) LAB7-3: 🚀 Lab 7-3: Custom ESP32 Component Demo Started
-I (304) ENHANCED_SENSOR: 🔧 Enhanced Sensor Component initialized
-I (314) ENHANCED_SENSOR: 📍 File: /project/sensor/sensor.c, Line: 12
-I (324) ENHANCED_SENSOR: ✅ GPIO LED configured on pin 2
-I (334) LAB7-3: 📋 Reading #1
-I (334) ENHANCED_SENSOR: 📊 Reading all sensor data...
-I (344) ENHANCED_SENSOR: 🌡️  Temperature: 28.45°C
-I (354) ENHANCED_SENSOR: 💧 Humidity: 72.30%
-I (364) ENHANCED_SENSOR: 🔥 Heat Index: 64.60
-I (364) ENHANCED_SENSOR: ✅ Comfortable conditions
+I (294) LAB7-3: 🚀 Lab 7-3: Custom Components Demo (sensor + display) Started
+I (304) LAB7-3: 📦 Using components created with idf.py create-component
+I (314) ENHANCED_SENSOR: 🔧 Enhanced Sensor Component initialized
+I (324) ENHANCED_SENSOR: 📍 File: /project/components/sensor/sensor.c, Line: 12
+I (334) ENHANCED_SENSOR: ✅ GPIO LED configured on pin 2
+I (344) DISPLAY: 🖥️  Display Component initialized
+I (354) DISPLAY: 📍 File: /project/components/display/display.c, Line: 8
+I (364) DISPLAY: ✅ Virtual display ready for operation
+I (374) LAB7-3: 📋 Reading #1
+I (384) DISPLAY: 🧹 Display cleared
+I (394) ENHANCED_SENSOR: 🌡️  Temperature: 28.45°C
+I (404) ENHANCED_SENSOR: 💧 Humidity: 72.30%
+I (414) LAB7-3: 🔥 Heat Index: 64.60
+I (424) DISPLAY: ┌─────────────────────────────────┐
+I (434) DISPLAY: │        SENSOR DATA DISPLAY      │
+I (444) DISPLAY: ├─────────────────────────────────┤
+I (454) DISPLAY: │ 🌡️  Temperature:  28.45°C      │
+I (464) DISPLAY: │ � Humidity:     72.30%       │
+I (474) DISPLAY: │ �🔥 Heat Index:   64.60        │
+I (484) DISPLAY: └─────────────────────────────────┘
+I (494) DISPLAY: ┌─────────────────────────────────┐
+I (504) DISPLAY: │         SYSTEM STATUS           │
+I (514) DISPLAY: ├─────────────────────────────────┤
+I (524) DISPLAY: │ Status: ✅ Comfortable        │
+I (534) DISPLAY: └─────────────────────────────────┘
+I (544) LAB7-3: ==========================================
 ```
 
 ---
@@ -681,15 +1064,17 @@ docker-compose up -d
 docker exec -it esp32-lab7 bash
 ```
 
-### 3. การทดสอบแต่ละ Lab
+### 3. การทดสอบแต่ละ Lab พร้อมสร้าง .gitignore
 ```bash
 # ทดสอบ Lab 7-1
 cd lab7-1_Managed_Local_Component
+# สร้าง .gitignore (ตามขั้นตอนใน Lab 7-1)
 idf.py set-target esp32
 idf.py build
 
 # ทดสอบ Lab 7-2  
 cd ../lab7-2_Managed_url_Component
+# สร้าง .gitignore (ตามขั้นตอนใน Lab 7-2)
 idf.py set-target esp32
 idf.py build
 
@@ -765,13 +1150,29 @@ idf.py update-dependencies
    - ตั้งชื่อ component ให้สื่อความหมาย
    - เขียน documentation ให้ครบถ้วน
    - ใช้ version control สำหรับ component ที่พัฒนาเอง
+   - **สร้าง .gitignore ทุกครั้งที่เริ่ม project ใหม่**
 
-2. **การแก้ไขปัญหา**
+2. **การจัดการไฟล์ด้วย .gitignore**
+   - `build/` - ไฟล์ที่ compile แล้ว (ไม่ควร commit)
+   - `sdkconfig*` - ไฟล์ configuration (อาจแตกต่างแต่ละเครื่อง)
+   - `managed_components/` - components ที่ดาวน์โหลดอัตโนมัติ
+   - `.vscode/`, `.idea/` - ไฟล์ settings ของ IDE
+
+3. **การแก้ไขปัญหา**
    - ตรวจสอบ dependency ใน CMakeLists.txt
    - ตรวจสอบ path ของ include files
    - ใช้ `idf.py clean` เมื่อมีปัญหาการ build
+   - **ลบโฟลเดอร์ build/ และ build ใหม่หากมีปัญหา**
 
-3. **การพัฒนาต่อยอด**
+4. **การพัฒนาต่อยอด**
    - ศึกษา ESP Component Registry เพิ่มเติม
    - เรียนรู้การสร้าง component แบบ professional
    - ฝึกการใช้ Git สำหรับจัดการ component
+   - **เรียนรู้ Git workflow สำหรับ embedded development**
+
+5. **GitHub Team Collaboration (เตรียมพร้อมสำหรับใบงานต่อไป)**
+   - **Feature Branch Workflow** - สร้าง branch แยกสำหรับแต่ละ component
+   - **Pull Request Process** - review code ก่อน merge
+   - **Component Ownership** - แต่ละคนรับผิดชอบ component ของตนเอง
+   - **Issue Tracking** - ใช้ GitHub Issues สำหรับติดตามงาน
+   - **Documentation** - เขียน README.md สำหรับแต่ละ component
